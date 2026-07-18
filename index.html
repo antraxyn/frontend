@@ -64,7 +64,6 @@
                 <div class="flex-1 max-w-xl hidden md:block">
                     <div class="relative group">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i class="fa-solid fa-magnifying-glass text-white/50 group-focus-within:text-cyan-400 transition-colors"></i></div>
-                        <!-- UPDATE: Teks placeholder dirapikan -->
                         <input type="text" id="desktopSearch" oninput="handleSearch(this.value)" class="block w-full pl-11 pr-4 py-2 border border-white/20 rounded-full bg-white/[0.04] text-white placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-cyan-400 focus:border-cyan-400 focus:bg-white/[0.08] sm:text-sm transition-all" placeholder="Cari judul, kategori, atau deskripsi e-book...">
                     </div>
                 </div>
@@ -85,9 +84,8 @@
         
         <div class="border-t border-white/[0.08]">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <!-- UPDATE: Area Kategori sekarang dikosongkan untuk diisi dinamis oleh JavaScript -->
+                <!-- Area Kategori akan diisi otomatis oleh JavaScript berdasarkan Database -->
                 <div id="categoryContainer" class="flex space-x-6 overflow-x-auto py-3 scrollbar-hide text-xs font-medium tracking-wide">
-                    <!-- Tombol akan di-generate di sini -->
                 </div>
             </div>
         </div>
@@ -156,25 +154,40 @@
 
         async function initializeApp() {
             try {
-                const fp = await fpPromise;
-                const result = await fp.get();
-                appState.fingerprint = result.visitorId; 
+                // 1. Tangkap Sidik Jari Perangkat (dengan Fallback untuk AdBlock/Brave)
+                try {
+                    const fp = await fpPromise;
+                    const result = await fp.get();
+                    appState.fingerprint = result.visitorId; 
+                } catch (fpError) {
+                    console.warn("Fingerprint diblokir. Menggunakan ID cadangan.");
+                    let fallbackId = localStorage.getItem('sanlucid_fallback_id');
+                    if (!fallbackId) {
+                        fallbackId = 'anon-' + Math.random().toString(36).substr(2, 9);
+                        localStorage.setItem('sanlucid_fallback_id', fallbackId);
+                    }
+                    appState.fingerprint = fallbackId;
+                }
                 
+                // 2. Tarik Data Nyata dari Backend Rust
                 const productRes = await fetch(`${API_BASE_URL}/products`);
+                if (!productRes.ok) throw new Error("Gagal mengambil produk dari server.");
+                
                 const dbProducts = await productRes.json();
                 
                 appState.allProducts = dbProducts;
                 appState.filteredProducts = [...appState.allProducts];
 
-                // Panggil renderCategories untuk membuat tombol dari database
+                // Generate Kategori Dinamis
                 renderCategories();
                 
+                // 3. Cek Status Pembelian Aktif
                 await checkAllPurchases();
                 renderProducts();
 
             } catch (error) {
                 console.error("Sistem gagal terhubung:", error);
-                document.getElementById('productGrid').innerHTML = '<div class="col-span-full text-center py-10 text-red-400 font-bold"><i class="fa-solid fa-triangle-exclamation text-3xl mb-3"></i><br>Gagal terhubung ke Database Server.</div>';
+                document.getElementById('productGrid').innerHTML = '<div class="col-span-full text-center py-10 text-red-400 font-bold"><i class="fa-solid fa-triangle-exclamation text-3xl mb-3"></i><br>Gagal terhubung ke Database Server.<br><span class="text-sm font-normal text-white/50 mt-2 block">Coba muat ulang (refresh) halaman dalam beberapa detik.</span></div>';
             }
         }
 
@@ -195,17 +208,12 @@
             }
         }
 
-        // FUNGSI BARU: Tarik kategori unik dari database
+        // FUNGSI: Tarik kategori unik dari database
         function renderCategories() {
             const container = document.getElementById('categoryContainer');
-            
-            // Dapatkan kategori yang unik (menghapus duplikat dan nilai kosong)
             const uniqueCategories = [...new Set(appState.allProducts.map(p => p.kategori).filter(Boolean))];
-
-            // Selalu sediakan tombol "Semua E-Book" di awal
             let html = `<button onclick="filterByCategory('', this)" class="category-btn text-cyan-400 whitespace-nowrap font-bold">Semua E-Book</button>`;
 
-            // Buat tombol untuk setiap kategori unik yang ditemukan
             uniqueCategories.forEach(cat => {
                 html += `<button onclick="filterByCategory('${cat}', this)" class="category-btn text-white/70 hover:text-white whitespace-nowrap transition-colors uppercase">${cat}</button>`;
             });
@@ -213,23 +221,19 @@
             container.innerHTML = html;
         }
 
-        // FUNGSI BARU: Filter berdasarkan kategori spesifik saat tombol diklik
+        // FUNGSI: Filter berdasarkan kategori
         function filterByCategory(kategori, btnElement) {
-            // Reset gaya visual untuk semua tombol
             document.querySelectorAll('.category-btn').forEach(btn => {
                 btn.classList.remove('text-cyan-400', 'font-bold');
                 btn.classList.add('text-white/70');
             });
             
-            // Highlight tombol yang aktif
             btnElement.classList.remove('text-white/70');
             btnElement.classList.add('text-cyan-400', 'font-bold');
 
-            // Kosongkan input pencarian manual agar tidak tumpang tindih
             document.getElementById('desktopSearch').value = '';
             document.getElementById('mobileSearchInput').value = '';
 
-            // Eksekusi filter data
             if (kategori === '') {
                 appState.filteredProducts = [...appState.allProducts];
             } else {
@@ -266,7 +270,10 @@
                 const priceFormatted = new Intl.NumberFormat('id-ID').format(product.price);
                 const safeDesc = encodeURIComponent(product.deskripsi.replace(/\n/g, '<br>'));
                 
+                // Mencegah pemblokiran DNS gambar oleh provider lokal
                 const safeImg = `https://wsrv.nl/?url=${product.cover_url.replace("i.ibb.co", "i.ibb.co.com")}`;
+                
+                // Mengamankan ID File dengan melemparkan proses ke Backend
                 const sampleLink = `${API_BASE_URL}/sample/${product.id}`;
 
                 const buttonHtml = downloadUrl 
@@ -340,7 +347,6 @@
             document.getElementById('desktopSearch').value = query;
             document.getElementById('mobileSearchInput').value = query;
 
-            // Reset visual kategori kembali ke "Semua E-Book" jika ada pencarian teks
             if (lowerQuery !== "") {
                 document.querySelectorAll('.category-btn').forEach((btn, index) => {
                     if(index === 0) {
