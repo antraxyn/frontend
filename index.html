@@ -64,7 +64,8 @@
                 <div class="flex-1 max-w-xl hidden md:block">
                     <div class="relative group">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i class="fa-solid fa-magnifying-glass text-white/50 group-focus-within:text-cyan-400 transition-colors"></i></div>
-                        <input type="text" id="desktopSearch" oninput="handleSearch(this.value)" class="block w-full pl-11 pr-4 py-2 border border-white/20 rounded-full bg-white/[0.04] text-white placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-cyan-400 focus:border-cyan-400 focus:bg-white/[0.08] sm:text-sm transition-all" placeholder="Cari e-book MQL5, strategi, atau EA...">
+                        <!-- UPDATE: Teks placeholder dirapikan -->
+                        <input type="text" id="desktopSearch" oninput="handleSearch(this.value)" class="block w-full pl-11 pr-4 py-2 border border-white/20 rounded-full bg-white/[0.04] text-white placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-cyan-400 focus:border-cyan-400 focus:bg-white/[0.08] sm:text-sm transition-all" placeholder="Cari judul, kategori, atau deskripsi e-book...">
                     </div>
                 </div>
                 <div class="relative">
@@ -84,10 +85,9 @@
         
         <div class="border-t border-white/[0.08]">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex space-x-6 overflow-x-auto py-3 scrollbar-hide text-xs font-medium tracking-wide">
-                    <button onclick="handleSearch('')" class="text-cyan-400 whitespace-nowrap font-bold">Semua E-Book</button>
-                    <button onclick="handleSearch('MQL5')" class="text-white/70 hover:text-white whitespace-nowrap transition-colors">MQL5 & EA</button>
-                    <button onclick="handleSearch('Strategi')" class="text-white/70 hover:text-white whitespace-nowrap transition-colors">Strategi & Indikator</button>
+                <!-- UPDATE: Area Kategori sekarang dikosongkan untuk diisi dinamis oleh JavaScript -->
+                <div id="categoryContainer" class="flex space-x-6 overflow-x-auto py-3 scrollbar-hide text-xs font-medium tracking-wide">
+                    <!-- Tombol akan di-generate di sini -->
                 </div>
             </div>
         </div>
@@ -113,7 +113,7 @@
     <!-- MOBILE FLOATING SEARCH -->
     <div id="mobileSearchFab" class="search-fab-container md:hidden">
         <div class="fab-icon-box" onclick="toggleMobileSearch()"><i class="fa-solid fa-magnifying-glass text-white text-lg"></i></div>
-        <input type="text" id="mobileSearchInput" oninput="handleSearch(this.value)" class="search-input-mobile" placeholder="Cari e-book...">
+        <input type="text" id="mobileSearchInput" oninput="handleSearch(this.value)" class="search-input-mobile" placeholder="Cari judul atau kategori...">
         <div class="fab-close-btn" onclick="toggleMobileSearch()"><i class="fa-solid fa-xmark text-white/70 text-lg hover:text-white transition-colors"></i></div>
     </div>
 
@@ -156,19 +156,19 @@
 
         async function initializeApp() {
             try {
-                // 1. Tangkap Sidik Jari Perangkat
                 const fp = await fpPromise;
                 const result = await fp.get();
                 appState.fingerprint = result.visitorId; 
                 
-                // 2. Tarik Data Nyata dari Backend Rust
                 const productRes = await fetch(`${API_BASE_URL}/products`);
                 const dbProducts = await productRes.json();
                 
                 appState.allProducts = dbProducts;
                 appState.filteredProducts = [...appState.allProducts];
 
-                // 3. Cek Status Pembelian Aktif
+                // Panggil renderCategories untuk membuat tombol dari database
+                renderCategories();
+                
                 await checkAllPurchases();
                 renderProducts();
 
@@ -193,6 +193,51 @@
             } catch (error) {
                 console.warn("Gagal mengecek riwayat pesanan.");
             }
+        }
+
+        // FUNGSI BARU: Tarik kategori unik dari database
+        function renderCategories() {
+            const container = document.getElementById('categoryContainer');
+            
+            // Dapatkan kategori yang unik (menghapus duplikat dan nilai kosong)
+            const uniqueCategories = [...new Set(appState.allProducts.map(p => p.kategori).filter(Boolean))];
+
+            // Selalu sediakan tombol "Semua E-Book" di awal
+            let html = `<button onclick="filterByCategory('', this)" class="category-btn text-cyan-400 whitespace-nowrap font-bold">Semua E-Book</button>`;
+
+            // Buat tombol untuk setiap kategori unik yang ditemukan
+            uniqueCategories.forEach(cat => {
+                html += `<button onclick="filterByCategory('${cat}', this)" class="category-btn text-white/70 hover:text-white whitespace-nowrap transition-colors uppercase">${cat}</button>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // FUNGSI BARU: Filter berdasarkan kategori spesifik saat tombol diklik
+        function filterByCategory(kategori, btnElement) {
+            // Reset gaya visual untuk semua tombol
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('text-cyan-400', 'font-bold');
+                btn.classList.add('text-white/70');
+            });
+            
+            // Highlight tombol yang aktif
+            btnElement.classList.remove('text-white/70');
+            btnElement.classList.add('text-cyan-400', 'font-bold');
+
+            // Kosongkan input pencarian manual agar tidak tumpang tindih
+            document.getElementById('desktopSearch').value = '';
+            document.getElementById('mobileSearchInput').value = '';
+
+            // Eksekusi filter data
+            if (kategori === '') {
+                appState.filteredProducts = [...appState.allProducts];
+            } else {
+                appState.filteredProducts = appState.allProducts.filter(p => p.kategori === kategori);
+            }
+            
+            appState.currentPage = 1;
+            renderProducts(false);
         }
 
         function renderProducts(append = false) {
@@ -221,9 +266,7 @@
                 const priceFormatted = new Intl.NumberFormat('id-ID').format(product.price);
                 const safeDesc = encodeURIComponent(product.deskripsi.replace(/\n/g, '<br>'));
                 
-                // --- UPDATE: Integrasi Image Proxy ImgBB (wsrv.nl bypass) ---
                 const safeImg = `https://wsrv.nl/?url=${product.cover_url.replace("i.ibb.co", "i.ibb.co.com")}`;
-                
                 const sampleLink = `https://kurir-toko.akun-anda.workers.dev/sample?file_id=${product.sample_file_id}`;
 
                 const buttonHtml = downloadUrl 
@@ -234,14 +277,12 @@
                     <div class="glass-card flex flex-col rounded-2xl overflow-hidden">
                         <div class="aspect-[2/3] bg-black/40 relative overflow-hidden p-2 md:p-3 group">
                             
-                            <!-- UPDATE: onClick bukaPopup disematkan safeImg -->
                             <button onclick="bukaPopup('${safeImg}', '${product.kategori}', '${product.title}', decodeURIComponent('${safeDesc}'), '${sampleLink}')" class="absolute top-2 left-2 md:top-3 md:left-3 bg-black/60 hover:bg-cyan-500 w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-full text-white border border-white/20 z-30 transition-all shadow-lg">
                                 <i class="fa-solid fa-eye text-[10px] md:text-xs"></i>
                             </button>
 
                             <div class="absolute inset-0 bg-gradient-to-tr from-white/[0.15] to-transparent pointer-events-none z-10"></div>
                             
-                            <!-- UPDATE: src menggunakan safeImg -->
                             <img src="${safeImg}" alt="Cover" class="w-full h-full object-cover rounded-lg md:rounded-xl shadow-md group-hover:scale-105 transition-transform duration-500">
                             
                             <div class="absolute top-3 right-3 md:top-5 md:right-5 bg-black/60 px-1.5 py-0.5 md:px-2 md:py-1 rounded text-[8px] md:text-[9px] font-bold tracking-widest text-white border border-white/20 z-20">PDF</div>
@@ -299,11 +340,26 @@
             document.getElementById('desktopSearch').value = query;
             document.getElementById('mobileSearchInput').value = query;
 
+            // Reset visual kategori kembali ke "Semua E-Book" jika ada pencarian teks
+            if (lowerQuery !== "") {
+                document.querySelectorAll('.category-btn').forEach((btn, index) => {
+                    if(index === 0) {
+                        btn.classList.add('text-cyan-400', 'font-bold');
+                        btn.classList.remove('text-white/70');
+                    } else {
+                        btn.classList.remove('text-cyan-400', 'font-bold');
+                        btn.classList.add('text-white/70');
+                    }
+                });
+            }
+
             if(lowerQuery === "") {
                 appState.filteredProducts = [...appState.allProducts];
             } else {
                 appState.filteredProducts = appState.allProducts.filter(p => 
-                    p.title.toLowerCase().includes(lowerQuery) || p.kategori.toLowerCase().includes(lowerQuery) || p.deskripsi.toLowerCase().includes(lowerQuery)
+                    p.title.toLowerCase().includes(lowerQuery) || 
+                    (p.kategori && p.kategori.toLowerCase().includes(lowerQuery)) || 
+                    (p.deskripsi && p.deskripsi.toLowerCase().includes(lowerQuery))
                 );
             }
             appState.currentPage = 1;
