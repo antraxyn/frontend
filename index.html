@@ -161,7 +161,7 @@
                 const result = await fp.get();
                 appState.fingerprint = result.visitorId; 
                 
-                // 2. Tarik Data Nyata dari Backend Rust (TiDB Database)
+                // 2. Tarik Data Nyata dari Backend Rust
                 const productRes = await fetch(`${API_BASE_URL}/products`);
                 const dbProducts = await productRes.json();
                 
@@ -221,7 +221,9 @@
                 const priceFormatted = new Intl.NumberFormat('id-ID').format(product.price);
                 const safeDesc = encodeURIComponent(product.deskripsi.replace(/\n/g, '<br>'));
                 
-                // Link menuju Cloudflare Worker milik Anda (Sesuaikan url-nya nanti)
+                // --- UPDATE: Integrasi Image Proxy ImgBB (wsrv.nl bypass) ---
+                const safeImg = `https://wsrv.nl/?url=${product.cover_url.replace("i.ibb.co", "i.ibb.co.com")}`;
+                
                 const sampleLink = `https://kurir-toko.akun-anda.workers.dev/sample?file_id=${product.sample_file_id}`;
 
                 const buttonHtml = downloadUrl 
@@ -232,12 +234,15 @@
                     <div class="glass-card flex flex-col rounded-2xl overflow-hidden">
                         <div class="aspect-[2/3] bg-black/40 relative overflow-hidden p-2 md:p-3 group">
                             
-                            <button onclick="bukaPopup('${product.cover_url}', '${product.kategori}', '${product.title}', decodeURIComponent('${safeDesc}'), '${sampleLink}')" class="absolute top-2 left-2 md:top-3 md:left-3 bg-black/60 hover:bg-cyan-500 w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-full text-white border border-white/20 z-30 transition-all shadow-lg">
+                            <!-- UPDATE: onClick bukaPopup disematkan safeImg -->
+                            <button onclick="bukaPopup('${safeImg}', '${product.kategori}', '${product.title}', decodeURIComponent('${safeDesc}'), '${sampleLink}')" class="absolute top-2 left-2 md:top-3 md:left-3 bg-black/60 hover:bg-cyan-500 w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-full text-white border border-white/20 z-30 transition-all shadow-lg">
                                 <i class="fa-solid fa-eye text-[10px] md:text-xs"></i>
                             </button>
 
                             <div class="absolute inset-0 bg-gradient-to-tr from-white/[0.15] to-transparent pointer-events-none z-10"></div>
-                            <img src="${product.cover_url}" alt="Cover" class="w-full h-full object-cover rounded-lg md:rounded-xl shadow-md group-hover:scale-105 transition-transform duration-500">
+                            
+                            <!-- UPDATE: src menggunakan safeImg -->
+                            <img src="${safeImg}" alt="Cover" class="w-full h-full object-cover rounded-lg md:rounded-xl shadow-md group-hover:scale-105 transition-transform duration-500">
                             
                             <div class="absolute top-3 right-3 md:top-5 md:right-5 bg-black/60 px-1.5 py-0.5 md:px-2 md:py-1 rounded text-[8px] md:text-[9px] font-bold tracking-widest text-white border border-white/20 z-20">PDF</div>
                         </div>
@@ -348,7 +353,6 @@
             }
         });
 
-        // FUNGSI CHECKOUT TERHUBUNG KE BACKEND
         async function processCheckout(productId) {
             try {
                 const btn = document.getElementById(`btn-${productId}`);
@@ -366,7 +370,6 @@
                 
                 if(response.ok) {
                     alert(`✅ ID Pesanan: ${data.order_id}\n\nDi sinilah Anda nantinya mengarahkan pembeli ke halaman pembayaran Pakkasir!`);
-                    // Contoh pengalihan: window.location.href = `https://pakkasir.com/pay/${data.order_id}`;
                 } else {
                     alert("Gagal membuat pesanan.");
                 }
