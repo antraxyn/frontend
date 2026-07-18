@@ -19,146 +19,36 @@
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
 
-        /* =========================================
-           ANIMASI CAHAYA (SUPER RINGAN - NO BLUR) 
-           ========================================= */
-        @keyframes sweep1 {
-            0% { transform: translate3d(-30vw, -20vh, 0) scale(1); }
-            33% { transform: translate3d(60vw, 50vh, 0) scale(1.3); }
-            66% { transform: translate3d(-10vw, 80vh, 0) scale(0.8); }
-            100% { transform: translate3d(80vw, -10vh, 0) scale(1.2); }
-        }
-        @keyframes sweep2 {
-            0% { transform: translate3d(80vw, 80vh, 0) scale(1.2); }
-            33% { transform: translate3d(-20vw, 40vh, 0) scale(0.8); }
-            66% { transform: translate3d(50vw, -20vh, 0) scale(1.4); }
-            100% { transform: translate3d(-40vw, 90vh, 0) scale(1); }
-        }
-        @keyframes sweep3 {
-            0% { transform: translate3d(-20vw, 80vh, 0) scale(0.9); }
-            33% { transform: translate3d(70vw, 10vh, 0) scale(1.4); }
-            66% { transform: translate3d(10vw, 60vh, 0) scale(1); }
-            100% { transform: translate3d(90vw, -30vh, 0) scale(1.2); }
-        }
-        @keyframes sweep4 {
-            0% { transform: translate3d(90vw, -20vh, 0) scale(1.3); }
-            33% { transform: translate3d(-10vw, 70vh, 0) scale(0.9); }
-            66% { transform: translate3d(60vw, 90vh, 0) scale(1.1); }
-            100% { transform: translate3d(-30vw, 10vh, 0) scale(1.4); }
-        }
+        @keyframes sweep1 { 0% { transform: translate3d(-30vw, -20vh, 0) scale(1); } 33% { transform: translate3d(60vw, 50vh, 0) scale(1.3); } 66% { transform: translate3d(-10vw, 80vh, 0) scale(0.8); } 100% { transform: translate3d(80vw, -10vh, 0) scale(1.2); } }
+        @keyframes sweep2 { 0% { transform: translate3d(80vw, 80vh, 0) scale(1.2); } 33% { transform: translate3d(-20vw, 40vh, 0) scale(0.8); } 66% { transform: translate3d(50vw, -20vh, 0) scale(1.4); } 100% { transform: translate3d(-40vw, 90vh, 0) scale(1); } }
+        @keyframes sweep3 { 0% { transform: translate3d(-20vw, 80vh, 0) scale(0.9); } 33% { transform: translate3d(70vw, 10vh, 0) scale(1.4); } 66% { transform: translate3d(10vw, 60vh, 0) scale(1); } 100% { transform: translate3d(90vw, -30vh, 0) scale(1.2); } }
+        @keyframes sweep4 { 0% { transform: translate3d(90vw, -20vh, 0) scale(1.3); } 33% { transform: translate3d(-10vw, 70vh, 0) scale(0.9); } 66% { transform: translate3d(60vw, 90vh, 0) scale(1.1); } 100% { transform: translate3d(-30vw, 10vh, 0) scale(1.4); } }
 
-        .blob-base {
-            position: absolute;
-            will-change: transform; 
-            animation-iteration-count: infinite;
-            animation-direction: alternate;
-            animation-timing-function: ease-in-out;
-        }
+        .blob-base { position: absolute; will-change: transform; animation-iteration-count: infinite; animation-direction: alternate; animation-timing-function: ease-in-out; }
+        .color-1 { background: radial-gradient(circle, rgba(219,39,119,0.7) 0%, rgba(219,39,119,0) 70%); animation-name: sweep1; animation-duration: 13s; }
+        .color-2 { background: radial-gradient(circle, rgba(6,182,212,0.7) 0%, rgba(6,182,212,0) 70%); animation-name: sweep2; animation-duration: 15s; }
+        .color-3 { background: radial-gradient(circle, rgba(124,58,237,0.7) 0%, rgba(124,58,237,0) 70%); animation-name: sweep3; animation-duration: 19s; }
+        .color-4 { background: radial-gradient(circle, rgba(16,185,129,0.7) 0%, rgba(16,185,129,0) 70%); animation-name: sweep4; animation-duration: 23s; }
 
-        .color-1 { 
-            background: radial-gradient(circle, rgba(219,39,119,0.7) 0%, rgba(219,39,119,0) 70%);
-            animation-name: sweep1; animation-duration: 13s; 
-        }
-        .color-2 { 
-            background: radial-gradient(circle, rgba(6,182,212,0.7) 0%, rgba(6,182,212,0) 70%);
-            animation-name: sweep2; animation-duration: 15s; 
-        }
-        .color-3 { 
-            background: radial-gradient(circle, rgba(124,58,237,0.7) 0%, rgba(124,58,237,0) 70%);
-            animation-name: sweep3; animation-duration: 19s; 
-        }
-        .color-4 { 
-            background: radial-gradient(circle, rgba(16,185,129,0.7) 0%, rgba(16,185,129,0) 70%);
-            animation-name: sweep4; animation-duration: 23s; 
-        }
+        .glass-panel { background: rgba(20, 25, 40, 0.4); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        .glass-card { background: rgba(25, 30, 45, 0.95); border: 1px solid rgba(255, 255, 255, 0.05); border-top: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); transform: translateZ(0); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .glass-card:hover { transform: translate3d(0, -4px, 0); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); background: rgba(35, 40, 55, 0.98); }
 
-        @media (min-width: 768px) {
-            .color-1 { animation-duration: 29s; }
-            .color-2 { animation-duration: 31s; }
-            .color-3 { animation-duration: 37s; }
-            .color-4 { animation-duration: 41s; }
-        }
-
-        /* =========================================
-           KACA NAVBAR & KARTU (SMART GLASS)
-           ========================================= */
-        .glass-panel {
-            background: rgba(20, 25, 40, 0.4);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .glass-card {
-            background: rgba(25, 30, 45, 0.95); 
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-top: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            transform: translateZ(0); 
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        
-        .glass-card:hover {
-            transform: translate3d(0, -4px, 0);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-            background: rgba(35, 40, 55, 0.98);
-        }
-
-        @media (min-width: 768px) {
-            .glass-card {
-                background: rgba(20, 25, 40, 0.2);
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                border-top: 1px solid rgba(255, 255, 255, 0.25);
-                border-left: 1px solid rgba(255, 255, 255, 0.15);
-            }
-            .glass-card:hover {
-                background: rgba(30, 35, 50, 0.3);
-            }
-        }
-
-        /* =========================================
-           APPLE-STYLE MOBILE SEARCH FAB
-           ========================================= */
-        .search-fab-container {
-            position: fixed; bottom: 1.5rem; right: 1.5rem;
-            height: 3.5rem; width: 3.5rem; border-radius: 9999px;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            z-index: 90; overflow: hidden; display: flex; align-items: center;
-            background: rgba(20, 25, 40, 0.95);
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.6);
-        }
-
+        .search-fab-container { position: fixed; bottom: 1.5rem; right: 1.5rem; height: 3.5rem; width: 3.5rem; border-radius: 9999px; transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 90; overflow: hidden; display: flex; align-items: center; background: rgba(20, 25, 40, 0.95); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 30px rgba(0,0,0,0.6); }
         .search-fab-container.expanded { width: calc(100vw - 3rem); max-width: 24rem; }
-        .search-input-mobile {
-            width: 100%; background: transparent; border: none; color: white;
-            padding-left: 3.5rem; padding-right: 3rem; outline: none;
-            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
-        }
+        .search-input-mobile { width: 100%; background: transparent; border: none; color: white; padding-left: 3.5rem; padding-right: 3rem; outline: none; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         .search-fab-container.expanded .search-input-mobile { opacity: 1; pointer-events: auto; }
-
-        .fab-icon-box, .fab-close-btn {
-            position: absolute; top: 0; width: 3.5rem; height: 3.5rem;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; z-index: 2;
-        }
+        .fab-icon-box, .fab-close-btn { position: absolute; top: 0; width: 3.5rem; height: 3.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2; }
         .fab-icon-box { left: 0; }
         .fab-close-btn { right: 0; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         .search-fab-container.expanded .fab-close-btn { opacity: 1; pointer-events: auto; }
         
-        /* Animasi pop-up sederhana */
         .popup-scale { animation: popScale 0.3s ease-out forwards; }
-        @keyframes popScale {
-            0% { transform: scale(0.95); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
+        @keyframes popScale { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body class="text-slate-200 font-sans antialiased relative min-h-screen bg-[#050b14] pb-20 md:pb-0 overflow-x-hidden">
 
-    <!-- BACKGROUND CAHAYA CERAH MELINTAS -->
     <div class="fixed inset-0 z-[-2] bg-[#050b14] pointer-events-none">
         <div class="blob-base color-1 w-[120vw] h-[120vw] md:w-[70vw] md:h-[70vw]"></div>
         <div class="blob-base color-2 w-[110vw] h-[110vw] md:w-[65vw] md:h-[65vw]"></div>
@@ -170,42 +60,25 @@
     <nav class="sticky top-0 z-50 glass-panel">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16 gap-4">
-                
-                <div class="flex-shrink-0 text-xl font-bold tracking-widest text-white">
-                    SANLUCID<span class="text-cyan-400 font-black">.</span>
-                </div>
-                
+                <div class="flex-shrink-0 text-xl font-bold tracking-widest text-white">SANLUCID<span class="text-cyan-400 font-black">.</span></div>
                 <div class="flex-1 max-w-xl hidden md:block">
                     <div class="relative group">
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-magnifying-glass text-white/50 group-focus-within:text-cyan-400 transition-colors"></i>
-                        </div>
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i class="fa-solid fa-magnifying-glass text-white/50 group-focus-within:text-cyan-400 transition-colors"></i></div>
                         <input type="text" id="desktopSearch" oninput="handleSearch(this.value)" class="block w-full pl-11 pr-4 py-2 border border-white/20 rounded-full bg-white/[0.04] text-white placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-cyan-400 focus:border-cyan-400 focus:bg-white/[0.08] sm:text-sm transition-all" placeholder="Cari e-book MQL5, strategi, atau EA...">
                     </div>
                 </div>
-
                 <div class="relative">
                     <button id="supportBtn" onclick="toggleSupportMenu()" class="flex items-center text-xs font-bold px-4 py-1.5 rounded-full bg-white/[0.08] border border-white/20 hover:bg-white/[0.15] transition-all focus:outline-none z-50">
-                        <i class="fa-solid fa-headset text-cyan-400 mr-2"></i>
-                        <span class="text-white/90">Support</span>
-                        <i id="supportIcon" class="fa-solid fa-chevron-down text-white/50 ml-2 text-[10px] transition-transform duration-300"></i>
+                        <i class="fa-solid fa-headset text-cyan-400 mr-2"></i> <span class="text-white/90">Support</span> <i id="supportIcon" class="fa-solid fa-chevron-down text-white/50 ml-2 text-[10px] transition-transform duration-300"></i>
                     </button>
-                    
                     <div id="supportMenu" class="absolute right-0 mt-2 w-44 opacity-0 invisible scale-95 transition-all duration-300 transform origin-top-right z-[100]">
                         <div class="bg-[#0a0a0a] rounded-xl overflow-hidden py-1 border border-white/20 shadow-[0_15px_50px_rgba(0,0,0,0.8)]">
-                            <a href="https://wa.me/6281234567890" target="_blank" class="flex items-center px-4 py-3 hover:bg-white/10 transition-colors">
-                                <i class="fa-brands fa-whatsapp text-emerald-400 text-lg mr-3"></i>
-                                <span class="text-white/90 text-xs font-bold tracking-wide">WhatsApp</span>
-                            </a>
+                            <a href="https://wa.me/6281234567890" target="_blank" class="flex items-center px-4 py-3 hover:bg-white/10 transition-colors"><i class="fa-brands fa-whatsapp text-emerald-400 text-lg mr-3"></i><span class="text-white/90 text-xs font-bold tracking-wide">WhatsApp</span></a>
                             <div class="h-px w-full bg-white/10"></div>
-                            <a href="https://t.me/sanlucid" target="_blank" class="flex items-center px-4 py-3 hover:bg-white/10 transition-colors">
-                                <i class="fa-brands fa-telegram text-blue-400 text-lg mr-3"></i>
-                                <span class="text-white/90 text-xs font-bold tracking-wide">Telegram</span>
-                            </a>
+                            <a href="https://t.me/sanlucid" target="_blank" class="flex items-center px-4 py-3 hover:bg-white/10 transition-colors"><i class="fa-brands fa-telegram text-blue-400 text-lg mr-3"></i><span class="text-white/90 text-xs font-bold tracking-wide">Telegram</span></a>
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
         
@@ -222,79 +95,51 @@
 
     <!-- ETALASE PRODUK -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 relative z-10">
-        
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6" id="productGrid">
-            <div class="col-span-full text-center py-10 text-white/50">
+            <div class="col-span-full text-center py-10 text-white/50" id="loadingText">
                 <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-cyan-400"></i>
-                <p>Memuat Katalog...</p>
+                <p>Memuat Katalog dari Server...</p>
             </div>
         </div>
-
         <div class="mt-10 text-center hidden" id="loadMoreContainer">
-            <button onclick="loadMore()" class="px-8 py-3 bg-white/10 border border-white/20 hover:bg-white/20 text-white font-bold rounded-full transition-all shadow-lg">
-                Lihat Lebih Banyak <i class="fa-solid fa-chevron-down ml-2"></i>
-            </button>
+            <button onclick="loadMore()" class="px-8 py-3 bg-white/10 border border-white/20 hover:bg-white/20 text-white font-bold rounded-full transition-all shadow-lg">Lihat Lebih Banyak <i class="fa-solid fa-chevron-down ml-2"></i></button>
         </div>
-        
         <div class="mt-10 text-center hidden" id="emptyState">
             <i class="fa-solid fa-box-open text-5xl text-white/20 mb-4"></i>
-            <p class="text-white/50">Pencarian tidak ditemukan.</p>
+            <p class="text-white/50">Katalog masih kosong atau tidak ditemukan.</p>
         </div>
     </main>
 
     <!-- MOBILE FLOATING SEARCH -->
     <div id="mobileSearchFab" class="search-fab-container md:hidden">
-        <div class="fab-icon-box" onclick="toggleMobileSearch()">
-            <i class="fa-solid fa-magnifying-glass text-white text-lg"></i>
-        </div>
-        
+        <div class="fab-icon-box" onclick="toggleMobileSearch()"><i class="fa-solid fa-magnifying-glass text-white text-lg"></i></div>
         <input type="text" id="mobileSearchInput" oninput="handleSearch(this.value)" class="search-input-mobile" placeholder="Cari e-book...">
-        
-        <div class="fab-close-btn" onclick="toggleMobileSearch()">
-            <i class="fa-solid fa-xmark text-white/70 text-lg hover:text-white transition-colors"></i>
-        </div>
+        <div class="fab-close-btn" onclick="toggleMobileSearch()"><i class="fa-solid fa-xmark text-white/70 text-lg hover:text-white transition-colors"></i></div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- POP-UP DETAIL PRODUK (QUICK VIEW)          -->
-    <!-- ========================================== -->
+    <!-- POP-UP DETAIL PRODUK (QUICK VIEW) -->
     <div id="popupDetail" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onclick="tutupPopupOverlay(event)">
-        
-        <!-- Pembungkus agar Kotak & Tombol Silang sejajar vertikal -->
         <div class="flex flex-col items-center w-full max-w-sm" style="max-height: 95vh;">
-            
-            <!-- KOTAK KONTEN UTAMA -->
             <div class="bg-[#0f172a] border border-white/10 rounded-2xl w-full flex flex-col overflow-hidden shadow-[0_15px_50px_rgba(0,0,0,0.6)] popup-scale relative" style="max-height: calc(95vh - 70px);">
-                
-                <!-- Foto & Header (Tidak ikut scroll) -->
                 <div class="pt-5 pb-3 px-4 flex flex-col items-center text-center shrink-0 border-b border-white/5">
                     <img id="popImg" src="" alt="Cover Detail" class="w-24 md:w-28 h-auto object-cover rounded-lg shadow-lg mb-3 border border-white/10">
                     <span id="popKategori" class="text-[10px] text-cyan-400 font-bold uppercase tracking-widest mb-1"></span>
                     <h3 id="popJudul" class="text-base font-bold text-white leading-tight"></h3>
                 </div>
-                
-                <!-- Deskripsi (Area ini yang bisa di-scroll jika panjang) -->
                 <div class="p-4 overflow-y-auto grow text-sm text-white/70 leading-relaxed text-justify">
                     <p id="popDeskripsi"></p>
                 </div>
-                
-                <!-- Footer & Tombol (Statis di bawah) -->
                 <div class="p-4 bg-white/[0.03] border-t border-white/10 shrink-0">
                     <a id="popSampleBtn" href="#" target="_blank" class="block w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white text-center text-sm font-bold rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)]">
                         <i class="fa-solid fa-file-pdf mr-2"></i> Baca Free Sample
                     </a>
                 </div>
             </div>
-
-            <!-- TOMBOL SILANG DI TENGAH BAWAH -->
             <button onclick="tutupPopup()" class="mt-4 bg-red-500 hover:bg-red-400 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-[0_4px_15px_rgba(239,68,68,0.5)] border border-white/20 transition-all shrink-0 popup-scale">
                 <i class="fa-solid fa-xmark text-xl"></i>
             </button>
-            
         </div>
     </div>
-    <!-- ========================================== -->
-
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
@@ -309,39 +154,33 @@
             currentPage: 1
         };
 
-        const MOCK_KATALOG_JSON = [
-            { id: "PROD-001", title: "MQL5 Masterclass: Integrasi Indikator & Pine Script", author: "Sanlucid Press", price: "149.000", cover: "MQL5+Master" },
-            { id: "PROD-002", title: "Logika Eksekusi EA: Menghindari Order Terbalik", author: "Sanlucid Research", price: "85.000", cover: "EA+Logic" },
-            { id: "PROD-003", title: "Setup VPS MetaTrader untuk Performa 24/7", author: "Sanlucid Tech", price: "65.000", cover: "VPS+Setup" },
-            { id: "PROD-004", title: "Strategi Crossover EMA Terapan", author: "Sanlucid Press", price: "110.000", cover: "EMA+Strategy" },
-            { id: "PROD-005", title: "Bollinger Bands & Fibonacci untuk Gold", author: "Sanlucid Analytics", price: "175.000", cover: "Gold+Trading" },
-            { id: "PROD-006", title: "Manajemen Lisensi Bot Trading via Supabase", author: "Sanlucid Dev", price: "200.000", cover: "Bot+License" },
-            ...Array.from({length: 25}).map((_, i) => ({
-                id: `PROD-00${i+7}`, title: `Strategi Algoritma Vol.${i+1}`, author: "Sanlucid Press", price: "99.000", cover: `Vol+${i+1}`
-            }))
-        ];
-
         async function initializeApp() {
             try {
+                // 1. Tangkap Sidik Jari Perangkat
                 const fp = await fpPromise;
                 const result = await fp.get();
                 appState.fingerprint = result.visitorId; 
                 
-                appState.allProducts = MOCK_KATALOG_JSON;
+                // 2. Tarik Data Nyata dari Backend Rust (TiDB Database)
+                const productRes = await fetch(`${API_BASE_URL}/products`);
+                const dbProducts = await productRes.json();
+                
+                appState.allProducts = dbProducts;
                 appState.filteredProducts = [...appState.allProducts];
 
+                // 3. Cek Status Pembelian Aktif
                 await checkAllPurchases();
                 renderProducts();
+
             } catch (error) {
-                appState.allProducts = MOCK_KATALOG_JSON;
-                appState.filteredProducts = [...appState.allProducts];
-                renderProducts();
+                console.error("Sistem gagal terhubung:", error);
+                document.getElementById('productGrid').innerHTML = '<div class="col-span-full text-center py-10 text-red-400 font-bold"><i class="fa-solid fa-triangle-exclamation text-3xl mb-3"></i><br>Gagal terhubung ke Database Server.</div>';
             }
         }
 
         async function checkAllPurchases() {
             try {
-                const response = await fetch(`${API_BASE_URL}/get-purchases`, {
+                const response = await fetch(`${API_BASE_URL}/purchases`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ fingerprint: appState.fingerprint })
@@ -350,11 +189,9 @@
                 if(response.ok) {
                     const data = await response.json();
                     appState.purchasedMap = data.purchases || {};
-                } else {
-                    appState.purchasedMap = { "PROD-001": "https://contoh.com/download.pdf" };
                 }
             } catch (error) {
-                appState.purchasedMap = { "PROD-001": "https://contoh.com/download.pdf" };
+                console.warn("Gagal mengecek riwayat pesanan.");
             }
         }
 
@@ -381,36 +218,35 @@
 
             itemsToRender.forEach(product => {
                 const downloadUrl = appState.purchasedMap[product.id];
+                const priceFormatted = new Intl.NumberFormat('id-ID').format(product.price);
+                const safeDesc = encodeURIComponent(product.deskripsi.replace(/\n/g, '<br>'));
+                
+                // Link menuju Cloudflare Worker milik Anda (Sesuaikan url-nya nanti)
+                const sampleLink = `https://kurir-toko.akun-anda.workers.dev/sample?file_id=${product.sample_file_id}`;
+
                 const buttonHtml = downloadUrl 
                     ? `<a href="${downloadUrl}" target="_blank" class="block w-full py-2 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white text-center text-[10px] md:text-xs font-bold rounded-xl transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)]"><i class="fa-solid fa-cloud-arrow-down mr-1"></i> Unduh File</a>`
-                    : `<button onclick="processCheckout('${product.id}')" class="w-full py-2 bg-white/10 border border-white/20 text-white/90 hover:bg-white/20 text-[10px] md:text-xs font-semibold rounded-xl transition-colors">Beli Sekarang</button>`;
+                    : `<button id="btn-${product.id}" onclick="processCheckout('${product.id}')" class="w-full py-2 bg-white/10 border border-white/20 text-white/90 hover:bg-white/20 text-[10px] md:text-xs font-semibold rounded-xl transition-colors">Beli Sekarang</button>`;
 
-                // Generate Dummy Deskripsi untuk demonstrasi scroll
-                const dummyDesc = `E-book <b>${product.title}</b> ini disusun khusus untuk membantu Anda memahami materi secara komprehensif. <br><br>Dilengkapi dengan studi kasus nyata, panduan teknis langkah demi langkah, dan visualisasi yang mudah dipahami.<br><br><b>Materi Utama:</b><br>- Pengenalan Dasar Sistem<br>- Setup & Konfigurasi Lanjutan<br>- Praktik Terbaik & Tips Pro<br>- Analisis Studi Kasus<br><br>Sangat cocok untuk pemula hingga tingkat lanjut. Dapatkan akses ke ilmu mahal ini sekarang juga sebelum harga naik!`;
-                const imgUrl = `https://via.placeholder.com/400x600/0f172a/06b6d4?text=${product.cover}`;
-
-                // --- PERUBAHAN: TOMBOL MATA DI POJOK KIRI ATAS FOTO ---
                 htmlString += `
                     <div class="glass-card flex flex-col rounded-2xl overflow-hidden">
                         <div class="aspect-[2/3] bg-black/40 relative overflow-hidden p-2 md:p-3 group">
                             
-                            <!-- Tombol Mata (Quick View) -->
-                            <button onclick="bukaPopup('${imgUrl}', '${product.author}', '${product.title}', '${dummyDesc}', '#')" class="absolute top-2 left-2 md:top-3 md:left-3 bg-black/60 hover:bg-cyan-500 w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-full text-white border border-white/20 z-30 transition-all shadow-lg">
+                            <button onclick="bukaPopup('${product.cover_url}', '${product.kategori}', '${product.title}', decodeURIComponent('${safeDesc}'), '${sampleLink}')" class="absolute top-2 left-2 md:top-3 md:left-3 bg-black/60 hover:bg-cyan-500 w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-full text-white border border-white/20 z-30 transition-all shadow-lg">
                                 <i class="fa-solid fa-eye text-[10px] md:text-xs"></i>
                             </button>
 
                             <div class="absolute inset-0 bg-gradient-to-tr from-white/[0.15] to-transparent pointer-events-none z-10"></div>
-                            <img src="${imgUrl}" alt="Cover" class="w-full h-full object-cover rounded-lg md:rounded-xl shadow-md group-hover:scale-105 transition-transform duration-500">
+                            <img src="${product.cover_url}" alt="Cover" class="w-full h-full object-cover rounded-lg md:rounded-xl shadow-md group-hover:scale-105 transition-transform duration-500">
                             
-                            <!-- Label Kanan Atas -->
                             <div class="absolute top-3 right-3 md:top-5 md:right-5 bg-black/60 px-1.5 py-0.5 md:px-2 md:py-1 rounded text-[8px] md:text-[9px] font-bold tracking-widest text-white border border-white/20 z-20">PDF</div>
                         </div>
                         
                         <div class="p-3 md:p-4 flex flex-col flex-1">
                             <h3 class="text-xs md:text-sm font-bold text-white line-clamp-2 leading-snug mb-1">${product.title}</h3>
-                            <p class="text-[9px] md:text-[11px] text-white/50 mb-2 font-medium">${product.author}</p>
+                            <p class="text-[9px] md:text-[11px] text-white/50 mb-2 font-medium uppercase tracking-wider">${product.kategori}</p>
                             <div class="mt-auto mb-3">
-                                <span class="text-cyan-400 font-black text-xs md:text-sm">Rp ${product.price}</span>
+                                <span class="text-cyan-400 font-black text-xs md:text-sm">Rp ${priceFormatted}</span>
                             </div>
                             <div class="mt-auto">
                                 ${buttonHtml}
@@ -429,9 +265,6 @@
             }
         }
 
-        // ==========================================
-        // FUNGSI POP-UP (MODAL)
-        // ==========================================
         function bukaPopup(gambar, kategori, judul, deskripsi, linkSample) {
             document.getElementById('popImg').src = gambar;
             document.getElementById('popKategori').innerText = kategori;
@@ -442,8 +275,6 @@
             const popup = document.getElementById('popupDetail');
             popup.classList.remove('hidden');
             popup.classList.add('flex');
-            
-            // Kunci layar belakang agar tidak ikut terscroll
             document.body.style.overflow = 'hidden';
         }
 
@@ -451,19 +282,12 @@
             const popup = document.getElementById('popupDetail');
             popup.classList.add('hidden');
             popup.classList.remove('flex');
-            
-            // Kembalikan layar belakang agar bisa discroll lagi
             document.body.style.overflow = 'auto';
         }
 
         function tutupPopupOverlay(event) {
-            // Tutup hanya jika yang di-klik adalah background hitam (bukan kotaknya)
-            if (event.target.id === 'popupDetail') {
-                tutupPopup();
-            }
+            if (event.target.id === 'popupDetail') tutupPopup();
         }
-        // ==========================================
-
 
         function handleSearch(query) {
             const lowerQuery = query.toLowerCase().trim();
@@ -474,7 +298,7 @@
                 appState.filteredProducts = [...appState.allProducts];
             } else {
                 appState.filteredProducts = appState.allProducts.filter(p => 
-                    p.title.toLowerCase().includes(lowerQuery) || p.author.toLowerCase().includes(lowerQuery)
+                    p.title.toLowerCase().includes(lowerQuery) || p.kategori.toLowerCase().includes(lowerQuery) || p.deskripsi.toLowerCase().includes(lowerQuery)
                 );
             }
             appState.currentPage = 1;
@@ -489,7 +313,6 @@
         function toggleMobileSearch() {
             const fab = document.getElementById('mobileSearchFab');
             const input = document.getElementById('mobileSearchInput');
-            
             if (fab.classList.contains('expanded')) {
                 fab.classList.remove('expanded');
                 input.blur();
@@ -503,7 +326,6 @@
         function toggleSupportMenu() {
             const menu = document.getElementById('supportMenu');
             const icon = document.getElementById('supportIcon');
-            
             if (menu.classList.contains('opacity-0')) {
                 menu.classList.remove('opacity-0', 'invisible', 'scale-95');
                 menu.classList.add('opacity-100', 'visible', 'scale-100');
@@ -519,7 +341,6 @@
             const menu = document.getElementById('supportMenu');
             const btn = document.getElementById('supportBtn');
             const icon = document.getElementById('supportIcon');
-            
             if (menu && btn && !menu.contains(event.target) && !btn.contains(event.target)) {
                 menu.classList.add('opacity-0', 'invisible', 'scale-95');
                 menu.classList.remove('opacity-100', 'visible', 'scale-100');
@@ -527,8 +348,36 @@
             }
         });
 
+        // FUNGSI CHECKOUT TERHUBUNG KE BACKEND
         async function processCheckout(productId) {
-            alert(`Sistem Checkout Backend Dijalankan untuk ID: ${productId}\n\nPembeli akan diarahkan ke Pakkasir.`);
+            try {
+                const btn = document.getElementById(`btn-${productId}`);
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Proses...';
+                btn.disabled = true;
+
+                const response = await fetch(`${API_BASE_URL}/checkout`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ product_id: productId, fingerprint: appState.fingerprint })
+                });
+
+                const data = await response.json();
+                
+                if(response.ok) {
+                    alert(`✅ ID Pesanan: ${data.order_id}\n\nDi sinilah Anda nantinya mengarahkan pembeli ke halaman pembayaran Pakkasir!`);
+                    // Contoh pengalihan: window.location.href = `https://pakkasir.com/pay/${data.order_id}`;
+                } else {
+                    alert("Gagal membuat pesanan.");
+                }
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            } catch (error) {
+                alert("Gagal menghubungi server pusat.");
+                const btn = document.getElementById(`btn-${productId}`);
+                btn.innerHTML = 'Beli Sekarang';
+                btn.disabled = false;
+            }
         }
 
         window.onload = initializeApp;
