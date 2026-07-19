@@ -469,6 +469,7 @@
             script.src = "https://openfpcdn.io/fingerprintjs/v4";
             script.async = true;
             script.onload = initializeApp;
+            script.onerror = initializeApp; // <--- SOLUSINYA DI SINI
             document.head.appendChild(script);
         });
     </script>
