@@ -5,13 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sanlucid Digital E-Books</title>
     
+    <!-- PRECONNECT UNTUK MEMPERCEPAT KONEKSI KE SERVER RUST & CDN GAMBAR -->
+    <link rel="preconnect" href="https://guleleng.onrender.com" crossorigin>
+    <link rel="preconnect" href="https://wsrv.nl" crossorigin>
+    <link rel="dns-prefetch" href="https://wsrv.nl">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <script>
-        const fpPromise = import('https://openfpcdn.io/fingerprintjs/v4')
-            .then(FingerprintJS => FingerprintJS.load());
-    </script>
+    <!-- FINGERPRINT DIMUAT SECARA ASYNCHRONOUS AGAR TIDAK BLOKIR RENDER HALAMAN -->
+    <script async src="https://openfpcdn.io/fingerprintjs/v4"></script>
 
     <style>
         ::-webkit-scrollbar { width: 8px; }
@@ -31,7 +34,7 @@
         .color-4 { background: radial-gradient(circle, rgba(16,185,129,0.7) 0%, rgba(16,185,129,0) 70%); animation-name: sweep4; animation-duration: 23s; }
 
         .glass-panel { background: rgba(20, 25, 40, 0.4); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
-        .glass-card { background: rgba(25, 30, 45, 0.95); border: 1px solid rgba(255, 255, 255, 0.05); border-top: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); transform: translateZ(0); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .glass-card { background: rgba(25, 30, 45, 0.95); border: 1px solid rgba(255, 255, 255, 0.05); border-top: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); transform: translateZ(0); transition: transform 0.2s ease, box-shadow 0.2s ease; content-visibility: auto; }
         .glass-card:hover { transform: translate3d(0, -4px, 0); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); background: rgba(35, 40, 55, 0.98); }
 
         .search-fab-container { position: fixed; bottom: 1.5rem; right: 1.5rem; height: 3.5rem; width: 3.5rem; border-radius: 9999px; transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 90; overflow: hidden; display: flex; align-items: center; background: rgba(20, 25, 40, 0.95); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 30px rgba(0,0,0,0.6); }
@@ -56,7 +59,6 @@
         <div class="blob-base color-4 w-[115vw] h-[115vw] md:w-[75vw] md:h-[75vw]"></div>
     </div>
 
-    <!-- NAVBAR -->
     <nav class="sticky top-0 z-50 glass-panel">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16 gap-4">
@@ -64,7 +66,7 @@
                 <div class="flex-1 max-w-xl hidden md:block">
                     <div class="relative group">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i class="fa-solid fa-magnifying-glass text-white/50 group-focus-within:text-cyan-400 transition-colors"></i></div>
-                        <input type="text" id="desktopSearch" oninput="handleSearch(this.value)" class="block w-full pl-11 pr-4 py-2 border border-white/20 rounded-full bg-white/[0.04] text-white placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-cyan-400 focus:border-cyan-400 focus:bg-white/[0.08] sm:text-sm transition-all" placeholder="Cari judul, kategori, atau deskripsi e-book...">
+                        <input type="text" id="desktopSearch" oninput="debounceSearch(this.value)" class="block w-full pl-11 pr-4 py-2 border border-white/20 rounded-full bg-white/[0.04] text-white placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-cyan-400 focus:border-cyan-400 focus:bg-white/[0.08] sm:text-sm transition-all" placeholder="Cari judul, kategori, atau deskripsi e-book...">
                     </div>
                 </div>
                 <div class="relative">
@@ -84,19 +86,18 @@
         
         <div class="border-t border-white/[0.08]">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <!-- Area Kategori akan diisi otomatis oleh JavaScript berdasarkan Database -->
                 <div id="categoryContainer" class="flex space-x-6 overflow-x-auto py-3 scrollbar-hide text-xs font-medium tracking-wide">
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- ETALASE PRODUK -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 relative z-10">
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6" id="productGrid">
+            <!-- Loading Indicator -->
             <div class="col-span-full text-center py-10 text-white/50" id="loadingText">
                 <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-cyan-400"></i>
-                <p>Memuat Katalog dari Server...</p>
+                <p>Mempersiapkan Etalase...</p>
             </div>
         </div>
         <div class="mt-10 text-center hidden" id="loadMoreContainer">
@@ -108,19 +109,18 @@
         </div>
     </main>
 
-    <!-- MOBILE FLOATING SEARCH -->
     <div id="mobileSearchFab" class="search-fab-container md:hidden">
         <div class="fab-icon-box" onclick="toggleMobileSearch()"><i class="fa-solid fa-magnifying-glass text-white text-lg"></i></div>
-        <input type="text" id="mobileSearchInput" oninput="handleSearch(this.value)" class="search-input-mobile" placeholder="Cari judul atau kategori...">
+        <input type="text" id="mobileSearchInput" oninput="debounceSearch(this.value)" class="search-input-mobile" placeholder="Cari judul atau kategori...">
         <div class="fab-close-btn" onclick="toggleMobileSearch()"><i class="fa-solid fa-xmark text-white/70 text-lg hover:text-white transition-colors"></i></div>
     </div>
 
-    <!-- POP-UP DETAIL PRODUK (QUICK VIEW) -->
+    <!-- POP-UP DETAIL PRODUK -->
     <div id="popupDetail" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onclick="tutupPopupOverlay(event)">
         <div class="flex flex-col items-center w-full max-w-sm" style="max-height: 95vh;">
             <div class="bg-[#0f172a] border border-white/10 rounded-2xl w-full flex flex-col overflow-hidden shadow-[0_15px_50px_rgba(0,0,0,0.6)] popup-scale relative" style="max-height: calc(95vh - 70px);">
                 <div class="pt-5 pb-3 px-4 flex flex-col items-center text-center shrink-0 border-b border-white/5">
-                    <img id="popImg" src="" alt="Cover Detail" class="w-24 md:w-28 h-auto object-cover rounded-lg shadow-lg mb-3 border border-white/10">
+                    <img id="popImg" src="" loading="lazy" decoding="async" alt="Cover Detail" class="w-24 md:w-28 h-auto object-cover rounded-lg shadow-lg mb-3 border border-white/10">
                     <span id="popKategori" class="text-[10px] text-cyan-400 font-bold uppercase tracking-widest mb-1"></span>
                     <h3 id="popJudul" class="text-base font-bold text-white leading-tight"></h3>
                 </div>
@@ -139,10 +139,10 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
     <script>
         const API_BASE_URL = "https://guleleng.onrender.com/api";
-        const ITEMS_PER_PAGE = 20;
+        const ITEMS_PER_PAGE = 24; 
+        const CACHE_KEY = "sanlucid_db_cache";
         
         let appState = {
             fingerprint: "",
@@ -152,46 +152,67 @@
             currentPage: 1
         };
 
+        // ==========================================
+        // 1. INISIALISASI SUPER CEPAT (HYBRID LOADING)
+        // ==========================================
         async function initializeApp() {
-            try {
-                // 1. Tangkap Sidik Jari Perangkat (dengan Fallback untuk AdBlock/Brave)
+            // TAHAP 1: Muat instan dari Cache Lokal (jika ada)
+            const cachedData = localStorage.getItem(CACHE_KEY);
+            if (cachedData) {
                 try {
-                    const fp = await fpPromise;
-                    const result = await fp.get();
-                    appState.fingerprint = result.visitorId; 
-                } catch (fpError) {
-                    console.warn("Fingerprint diblokir. Menggunakan ID cadangan.");
-                    let fallbackId = localStorage.getItem('sanlucid_fallback_id');
-                    if (!fallbackId) {
-                        fallbackId = 'anon-' + Math.random().toString(36).substr(2, 9);
-                        localStorage.setItem('sanlucid_fallback_id', fallbackId);
+                    appState.allProducts = JSON.parse(cachedData);
+                    appState.filteredProducts = [...appState.allProducts];
+                    renderCategories();
+                    renderProducts();
+                } catch(e) { console.warn("Cache rusak, memuat ulang."); }
+            }
+
+            // TAHAP 2: Sinkronisasi data terbaru secara diam-diam (Background Sync)
+            fetchFreshData();
+
+            // TAHAP 3: Ambil Fingerprint tanpa memblokir rendering UI
+            getFingerprintAndPurchases();
+        }
+
+        async function fetchFreshData() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/products`);
+                if(response.ok) {
+                    const freshData = await response.json();
+                    
+                    // Cek jika data dari server berbeda dengan cache (menghindari render ulang yang tidak perlu)
+                    if (JSON.stringify(freshData) !== JSON.stringify(appState.allProducts)) {
+                        appState.allProducts = freshData;
+                        appState.filteredProducts = [...appState.allProducts];
+                        localStorage.setItem(CACHE_KEY, JSON.stringify(freshData));
+                        
+                        appState.currentPage = 1;
+                        renderCategories();
+                        renderProducts();
                     }
-                    appState.fingerprint = fallbackId;
                 }
-                
-                // 2. Tarik Data Nyata dari Backend Rust
-                const productRes = await fetch(`${API_BASE_URL}/products`);
-                if (!productRes.ok) throw new Error("Gagal mengambil produk dari server.");
-                
-                const dbProducts = await productRes.json();
-                
-                appState.allProducts = dbProducts;
-                appState.filteredProducts = [...appState.allProducts];
-
-                // Generate Kategori Dinamis
-                renderCategories();
-                
-                // 3. Cek Status Pembelian Aktif
-                await checkAllPurchases();
-                renderProducts();
-
             } catch (error) {
-                console.error("Sistem gagal terhubung:", error);
-                document.getElementById('productGrid').innerHTML = '<div class="col-span-full text-center py-10 text-red-400 font-bold"><i class="fa-solid fa-triangle-exclamation text-3xl mb-3"></i><br>Gagal terhubung ke Database Server.<br><span class="text-sm font-normal text-white/50 mt-2 block">Coba muat ulang (refresh) halaman dalam beberapa detik.</span></div>';
+                if(!appState.allProducts.length) {
+                    document.getElementById('productGrid').innerHTML = '<div class="col-span-full text-center py-10 text-red-400 font-bold">Gagal terhubung ke Database Server.</div>';
+                }
             }
         }
 
-        async function checkAllPurchases() {
+        async function getFingerprintAndPurchases() {
+            try {
+                const fp = await window.FingerprintJS.load();
+                const result = await fp.get();
+                appState.fingerprint = result.visitorId;
+            } catch (error) {
+                let fallbackId = localStorage.getItem('sanlucid_fallback_id');
+                if (!fallbackId) {
+                    fallbackId = 'anon-' + Math.random().toString(36).substr(2, 9);
+                    localStorage.setItem('sanlucid_fallback_id', fallbackId);
+                }
+                appState.fingerprint = fallbackId;
+            }
+
+            // Setelah ID Unik didapat, cek status pesanan ke Server
             try {
                 const response = await fetch(`${API_BASE_URL}/purchases`, {
                     method: 'POST',
@@ -202,46 +223,23 @@
                 if(response.ok) {
                     const data = await response.json();
                     appState.purchasedMap = data.purchases || {};
+                    // Re-render tombol-tombol agar menampilkan opsi Download jika sudah beli
+                    updatePurchaseButtons(); 
                 }
-            } catch (error) {
-                console.warn("Gagal mengecek riwayat pesanan.");
-            }
+            } catch (e) { console.warn("Pengecekan riwayat gagal."); }
         }
 
-        // FUNGSI: Tarik kategori unik dari database
+        // ==========================================
+        // 2. SISTEM RENDER DOM RINGAN
+        // ==========================================
         function renderCategories() {
             const container = document.getElementById('categoryContainer');
             const uniqueCategories = [...new Set(appState.allProducts.map(p => p.kategori).filter(Boolean))];
             let html = `<button onclick="filterByCategory('', this)" class="category-btn text-cyan-400 whitespace-nowrap font-bold">Semua E-Book</button>`;
-
             uniqueCategories.forEach(cat => {
                 html += `<button onclick="filterByCategory('${cat}', this)" class="category-btn text-white/70 hover:text-white whitespace-nowrap transition-colors uppercase">${cat}</button>`;
             });
-
             container.innerHTML = html;
-        }
-
-        // FUNGSI: Filter berdasarkan kategori
-        function filterByCategory(kategori, btnElement) {
-            document.querySelectorAll('.category-btn').forEach(btn => {
-                btn.classList.remove('text-cyan-400', 'font-bold');
-                btn.classList.add('text-white/70');
-            });
-            
-            btnElement.classList.remove('text-white/70');
-            btnElement.classList.add('text-cyan-400', 'font-bold');
-
-            document.getElementById('desktopSearch').value = '';
-            document.getElementById('mobileSearchInput').value = '';
-
-            if (kategori === '') {
-                appState.filteredProducts = [...appState.allProducts];
-            } else {
-                appState.filteredProducts = appState.allProducts.filter(p => p.kategori === kategori);
-            }
-            
-            appState.currentPage = 1;
-            renderProducts(false);
         }
 
         function renderProducts(append = false) {
@@ -263,19 +261,17 @@
             const endIndex = startIndex + ITEMS_PER_PAGE;
             const itemsToRender = appState.filteredProducts.slice(startIndex, endIndex);
 
-            let htmlString = '';
+            // Menggunakan DocumentFragment untuk meminimalisir reflow/repaint pada DOM (Lebih Ringan)
+            const fragment = document.createDocumentFragment();
 
             itemsToRender.forEach(product => {
-                // UPDATE PENTING: Backend sekarang mengembalikan status TRUE, bukan URL[cite: 4]
                 const isPurchased = appState.purchasedMap[product.id];
-                
                 const priceFormatted = new Intl.NumberFormat('id-ID').format(product.price);
                 const safeDesc = encodeURIComponent(product.deskripsi.replace(/\n/g, '<br>'));
                 
-                // Mencegah pemblokiran DNS gambar oleh provider lokal[cite: 5]
-                const safeImg = `https://wsrv.nl/?url=${product.cover_url.replace("i.ibb.co", "i.ibb.co.com")}`;
+                // MENGUBAH GAMBAR MENJADI WEBP DENGAN LEBAR 300PX AGAR SANGAT CEPAT DIMUAT
+                const safeImg = `https://wsrv.nl/?url=${product.cover_url.replace("i.ibb.co", "i.ibb.co.com")}&w=300&output=webp`;
                 
-                // SISTEM KEAMANAN BARU: Semua URL diarahkan ke Backend Rust untuk divalidasi[cite: 4]
                 const sampleLink = `${API_BASE_URL}/sample/${product.id}`;
                 const masterDownloadUrl = `${API_BASE_URL}/download/${product.id}?fingerprint=${appState.fingerprint}`;
 
@@ -283,36 +279,29 @@
                     ? `<a href="${masterDownloadUrl}" target="_blank" class="block w-full py-2 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white text-center text-[10px] md:text-xs font-bold rounded-xl transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)]"><i class="fa-solid fa-cloud-arrow-down mr-1"></i> Unduh File</a>`
                     : `<button id="btn-${product.id}" onclick="processCheckout('${product.id}')" class="w-full py-2 bg-white/10 border border-white/20 text-white/90 hover:bg-white/20 text-[10px] md:text-xs font-semibold rounded-xl transition-colors">Beli Sekarang</button>`;
 
-                htmlString += `
-                    <div class="glass-card flex flex-col rounded-2xl overflow-hidden">
-                        <div class="aspect-[2/3] bg-black/40 relative overflow-hidden p-2 md:p-3 group">
-                            
-                            <button onclick="bukaPopup('${safeImg}', '${product.kategori}', '${product.title}', decodeURIComponent('${safeDesc}'), '${sampleLink}')" class="absolute top-2 left-2 md:top-3 md:left-3 bg-black/60 hover:bg-cyan-500 w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-full text-white border border-white/20 z-30 transition-all shadow-lg">
-                                <i class="fa-solid fa-eye text-[10px] md:text-xs"></i>
-                            </button>
-
-                            <div class="absolute inset-0 bg-gradient-to-tr from-white/[0.15] to-transparent pointer-events-none z-10"></div>
-                            
-                            <img src="${safeImg}" alt="Cover" class="w-full h-full object-cover rounded-lg md:rounded-xl shadow-md group-hover:scale-105 transition-transform duration-500">
-                            
-                            <div class="absolute top-3 right-3 md:top-5 md:right-5 bg-black/60 px-1.5 py-0.5 md:px-2 md:py-1 rounded text-[8px] md:text-[9px] font-bold tracking-widest text-white border border-white/20 z-20">PDF</div>
-                        </div>
-                        
-                        <div class="p-3 md:p-4 flex flex-col flex-1">
-                            <h3 class="text-xs md:text-sm font-bold text-white line-clamp-2 leading-snug mb-1">${product.title}</h3>
-                            <p class="text-[9px] md:text-[11px] text-white/50 mb-2 font-medium uppercase tracking-wider">${product.kategori}</p>
-                            <div class="mt-auto mb-3">
-                                <span class="text-cyan-400 font-black text-xs md:text-sm">Rp ${priceFormatted}</span>
-                            </div>
-                            <div class="mt-auto">
-                                ${buttonHtml}
-                            </div>
-                        </div>
+                const card = document.createElement('div');
+                card.className = "glass-card flex flex-col rounded-2xl overflow-hidden";
+                card.innerHTML = `
+                    <div class="aspect-[2/3] bg-black/40 relative overflow-hidden p-2 md:p-3 group">
+                        <button onclick="bukaPopup('${safeImg}', '${product.kategori}', '${product.title}', decodeURIComponent('${safeDesc}'), '${sampleLink}')" class="absolute top-2 left-2 md:top-3 md:left-3 bg-black/60 hover:bg-cyan-500 w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-full text-white border border-white/20 z-30 transition-all shadow-lg">
+                            <i class="fa-solid fa-eye text-[10px] md:text-xs"></i>
+                        </button>
+                        <div class="absolute inset-0 bg-gradient-to-tr from-white/[0.15] to-transparent pointer-events-none z-10"></div>
+                        <!-- PENERAPAN LAZY LOADING & ASYNC DECODING PADA GAMBAR -->
+                        <img src="${safeImg}" loading="lazy" decoding="async" alt="Cover" class="w-full h-full object-cover rounded-lg md:rounded-xl shadow-md group-hover:scale-105 transition-transform duration-500">
+                        <div class="absolute top-3 right-3 md:top-5 md:right-5 bg-black/60 px-1.5 py-0.5 md:px-2 md:py-1 rounded text-[8px] md:text-[9px] font-bold tracking-widest text-white border border-white/20 z-20">PDF</div>
+                    </div>
+                    <div class="p-3 md:p-4 flex flex-col flex-1">
+                        <h3 class="text-xs md:text-sm font-bold text-white line-clamp-2 leading-snug mb-1">${product.title}</h3>
+                        <p class="text-[9px] md:text-[11px] text-white/50 mb-2 font-medium uppercase tracking-wider">${product.kategori}</p>
+                        <div class="mt-auto mb-3"><span class="text-cyan-400 font-black text-xs md:text-sm">Rp ${priceFormatted}</span></div>
+                        <div class="mt-auto" id="container-btn-${product.id}">${buttonHtml}</div>
                     </div>
                 `;
+                fragment.appendChild(card);
             });
 
-            grid.insertAdjacentHTML('beforeend', htmlString);
+            grid.appendChild(fragment);
 
             if(endIndex < appState.filteredProducts.length) {
                 loadMoreBtn.classList.remove('hidden');
@@ -321,44 +310,38 @@
             }
         }
 
-        function bukaPopup(gambar, kategori, judul, deskripsi, linkSample) {
-            document.getElementById('popImg').src = gambar;
-            document.getElementById('popKategori').innerText = kategori;
-            document.getElementById('popJudul').innerText = judul;
-            document.getElementById('popDeskripsi').innerHTML = deskripsi;
-            document.getElementById('popSampleBtn').href = linkSample;
-            
-            const popup = document.getElementById('popupDetail');
-            popup.classList.remove('hidden');
-            popup.classList.add('flex');
-            document.body.style.overflow = 'hidden';
+        // FUNGSI UPDATE TOMBOL TANPA RENDER ULANG SELURUH GRID
+        function updatePurchaseButtons() {
+            Object.keys(appState.purchasedMap).forEach(productId => {
+                const btnContainer = document.getElementById(`container-btn-${productId}`);
+                if (btnContainer) {
+                    const masterDownloadUrl = `${API_BASE_URL}/download/${productId}?fingerprint=${appState.fingerprint}`;
+                    btnContainer.innerHTML = `<a href="${masterDownloadUrl}" target="_blank" class="block w-full py-2 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white text-center text-[10px] md:text-xs font-bold rounded-xl transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)]"><i class="fa-solid fa-cloud-arrow-down mr-1"></i> Unduh File</a>`;
+                }
+            });
         }
 
-        function tutupPopup() {
-            const popup = document.getElementById('popupDetail');
-            popup.classList.add('hidden');
-            popup.classList.remove('flex');
-            document.body.style.overflow = 'auto';
+        // ==========================================
+        // 3. FITUR PENCARIAN (DEBOUNCE SEARCH)
+        // ==========================================
+        let searchTimeout;
+        function debounceSearch(query) {
+            clearTimeout(searchTimeout);
+            // Menunggu 300ms setelah user berhenti mengetik, baru jalankan pencarian (Anti Ngelag)
+            searchTimeout = setTimeout(() => {
+                executeSearch(query);
+            }, 300);
         }
 
-        function tutupPopupOverlay(event) {
-            if (event.target.id === 'popupDetail') tutupPopup();
-        }
-
-        function handleSearch(query) {
+        function executeSearch(query) {
             const lowerQuery = query.toLowerCase().trim();
             document.getElementById('desktopSearch').value = query;
             document.getElementById('mobileSearchInput').value = query;
 
             if (lowerQuery !== "") {
                 document.querySelectorAll('.category-btn').forEach((btn, index) => {
-                    if(index === 0) {
-                        btn.classList.add('text-cyan-400', 'font-bold');
-                        btn.classList.remove('text-white/70');
-                    } else {
-                        btn.classList.remove('text-cyan-400', 'font-bold');
-                        btn.classList.add('text-white/70');
-                    }
+                    if(index === 0) { btn.classList.add('text-cyan-400', 'font-bold'); btn.classList.remove('text-white/70'); } 
+                    else { btn.classList.remove('text-cyan-400', 'font-bold'); btn.classList.add('text-white/70'); }
                 });
             }
 
@@ -375,21 +358,58 @@
             renderProducts(false);
         }
 
+        // ==========================================
+        // 4. LOGIKA PENDUKUNG LAINNYA
+        // ==========================================
+        function filterByCategory(kategori, btnElement) {
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('text-cyan-400', 'font-bold');
+                btn.classList.add('text-white/70');
+            });
+            btnElement.classList.remove('text-white/70');
+            btnElement.classList.add('text-cyan-400', 'font-bold');
+            document.getElementById('desktopSearch').value = '';
+            document.getElementById('mobileSearchInput').value = '';
+
+            if (kategori === '') appState.filteredProducts = [...appState.allProducts];
+            else appState.filteredProducts = appState.allProducts.filter(p => p.kategori === kategori);
+            
+            appState.currentPage = 1;
+            renderProducts(false);
+        }
+
         function loadMore() {
             appState.currentPage++;
             renderProducts(true);
         }
 
+        function bukaPopup(gambar, kategori, judul, deskripsi, linkSample) {
+            document.getElementById('popImg').src = gambar;
+            document.getElementById('popKategori').innerText = kategori;
+            document.getElementById('popJudul').innerText = judul;
+            document.getElementById('popDeskripsi').innerHTML = deskripsi;
+            document.getElementById('popSampleBtn').href = linkSample;
+            const popup = document.getElementById('popupDetail');
+            popup.classList.remove('hidden'); popup.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function tutupPopup() {
+            const popup = document.getElementById('popupDetail');
+            popup.classList.add('hidden'); popup.classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        function tutupPopupOverlay(event) { if (event.target.id === 'popupDetail') tutupPopup(); }
+
         function toggleMobileSearch() {
             const fab = document.getElementById('mobileSearchFab');
             const input = document.getElementById('mobileSearchInput');
             if (fab.classList.contains('expanded')) {
-                fab.classList.remove('expanded');
-                input.blur();
-                if(input.value.trim() !== '') handleSearch(''); 
+                fab.classList.remove('expanded'); input.blur();
+                if(input.value.trim() !== '') executeSearch(''); 
             } else {
-                fab.classList.add('expanded');
-                setTimeout(() => input.focus(), 300);
+                fab.classList.add('expanded'); setTimeout(() => input.focus(), 300);
             }
         }
 
@@ -397,13 +417,9 @@
             const menu = document.getElementById('supportMenu');
             const icon = document.getElementById('supportIcon');
             if (menu.classList.contains('opacity-0')) {
-                menu.classList.remove('opacity-0', 'invisible', 'scale-95');
-                menu.classList.add('opacity-100', 'visible', 'scale-100');
-                icon.classList.add('rotate-180');
+                menu.classList.remove('opacity-0', 'invisible', 'scale-95'); menu.classList.add('opacity-100', 'visible', 'scale-100'); icon.classList.add('rotate-180');
             } else {
-                menu.classList.add('opacity-0', 'invisible', 'scale-95');
-                menu.classList.remove('opacity-100', 'visible', 'scale-100');
-                icon.classList.remove('rotate-180');
+                menu.classList.add('opacity-0', 'invisible', 'scale-95'); menu.classList.remove('opacity-100', 'visible', 'scale-100'); icon.classList.remove('rotate-180');
             }
         }
 
@@ -412,9 +428,7 @@
             const btn = document.getElementById('supportBtn');
             const icon = document.getElementById('supportIcon');
             if (menu && btn && !menu.contains(event.target) && !btn.contains(event.target)) {
-                menu.classList.add('opacity-0', 'invisible', 'scale-95');
-                menu.classList.remove('opacity-100', 'visible', 'scale-100');
-                icon.classList.remove('rotate-180');
+                menu.classList.add('opacity-0', 'invisible', 'scale-95'); menu.classList.remove('opacity-100', 'visible', 'scale-100'); icon.classList.remove('rotate-180');
             }
         });
 
@@ -448,7 +462,15 @@
             }
         }
 
-        window.onload = initializeApp;
+        // Tembak inisialisasi script segera setelah DOM siap
+        document.addEventListener("DOMContentLoaded", () => {
+            // FingerprintJS CDN script dinamis untuk mencegah render-blocking
+            const script = document.createElement('script');
+            script.src = "https://openfpcdn.io/fingerprintjs/v4";
+            script.async = true;
+            script.onload = initializeApp;
+            document.head.appendChild(script);
+        });
     </script>
 </body>
 </html>
