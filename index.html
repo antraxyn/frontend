@@ -156,7 +156,6 @@
         // 1. INISIALISASI SUPER CEPAT (HYBRID LOADING)
         // ==========================================
         async function initializeApp() {
-            // TAHAP 1: Muat instan dari Cache Lokal (jika ada)
             const cachedData = localStorage.getItem(CACHE_KEY);
             if (cachedData) {
                 try {
@@ -167,10 +166,7 @@
                 } catch(e) { console.warn("Cache rusak, memuat ulang."); }
             }
 
-            // TAHAP 2: Sinkronisasi data terbaru secara diam-diam (Background Sync)
             fetchFreshData();
-
-            // TAHAP 3: Ambil Fingerprint tanpa memblokir rendering UI
             getFingerprintAndPurchases();
         }
 
@@ -179,8 +175,6 @@
                 const response = await fetch(`${API_BASE_URL}/products`);
                 if(response.ok) {
                     const freshData = await response.json();
-                    
-                    // Cek jika data dari server berbeda dengan cache (menghindari render ulang yang tidak perlu)
                     if (JSON.stringify(freshData) !== JSON.stringify(appState.allProducts)) {
                         appState.allProducts = freshData;
                         appState.filteredProducts = [...appState.allProducts];
@@ -212,7 +206,6 @@
                 appState.fingerprint = fallbackId;
             }
 
-            // Setelah ID Unik didapat, cek status pesanan ke Server
             try {
                 const response = await fetch(`${API_BASE_URL}/purchases`, {
                     method: 'POST',
@@ -223,7 +216,6 @@
                 if(response.ok) {
                     const data = await response.json();
                     appState.purchasedMap = data.purchases || {};
-                    // Re-render tombol-tombol agar menampilkan opsi Download jika sudah beli
                     updatePurchaseButtons(); 
                 }
             } catch (e) { console.warn("Pengecekan riwayat gagal."); }
@@ -261,19 +253,19 @@
             const endIndex = startIndex + ITEMS_PER_PAGE;
             const itemsToRender = appState.filteredProducts.slice(startIndex, endIndex);
 
-            // Menggunakan DocumentFragment untuk meminimalisir reflow/repaint pada DOM (Lebih Ringan)
             const fragment = document.createDocumentFragment();
 
             itemsToRender.forEach(product => {
                 const isPurchased = appState.purchasedMap[product.id];
                 const priceFormatted = new Intl.NumberFormat('id-ID').format(product.price);
                 const safeDesc = encodeURIComponent(product.deskripsi.replace(/\n/g, '<br>'));
-                
-                // MENGUBAH GAMBAR MENJADI WEBP DENGAN LEBAR 300PX AGAR SANGAT CEPAT DIMUAT
                 const safeImg = `https://wsrv.nl/?url=${product.cover_url.replace("i.ibb.co", "i.ibb.co.com")}&w=300&output=webp`;
                 
                 const sampleLink = `${API_BASE_URL}/sample/${product.id}`;
                 const masterDownloadUrl = `${API_BASE_URL}/download/${product.id}?fingerprint=${appState.fingerprint}`;
+                
+                const safeTitle = product.title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const actionPopup = `bukaPopup('${safeImg}', '${product.kategori}', '${safeTitle}', decodeURIComponent('${safeDesc}'), '${sampleLink}')`;
 
                 const buttonHtml = isPurchased 
                     ? `<a href="${masterDownloadUrl}" target="_blank" class="block w-full py-2 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white text-center text-[10px] md:text-xs font-bold rounded-xl transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)]"><i class="fa-solid fa-cloud-arrow-down mr-1"></i> Unduh File</a>`
@@ -283,16 +275,23 @@
                 card.className = "glass-card flex flex-col rounded-2xl overflow-hidden";
                 card.innerHTML = `
                     <div class="aspect-[2/3] bg-black/40 relative overflow-hidden p-2 md:p-3 group">
-                        <button onclick="bukaPopup('${safeImg}', '${product.kategori}', '${product.title}', decodeURIComponent('${safeDesc}'), '${sampleLink}')" class="absolute top-2 left-2 md:top-3 md:left-3 bg-black/60 hover:bg-cyan-500 w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-full text-white border border-white/20 z-30 transition-all shadow-lg">
+                        
+                        <button onclick="${actionPopup}" class="absolute top-2 left-2 md:top-3 md:left-3 bg-black/60 hover:bg-cyan-500 w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-full text-white border border-white/20 z-30 transition-all shadow-lg">
                             <i class="fa-solid fa-eye text-[10px] md:text-xs"></i>
                         </button>
+                        
                         <div class="absolute inset-0 bg-gradient-to-tr from-white/[0.15] to-transparent pointer-events-none z-10"></div>
-                        <!-- PENERAPAN LAZY LOADING & ASYNC DECODING PADA GAMBAR -->
-                        <img src="${safeImg}" loading="lazy" decoding="async" alt="Cover" class="w-full h-full object-cover rounded-lg md:rounded-xl shadow-md group-hover:scale-105 transition-transform duration-500">
+                        
+                        <!-- KLIK FOTO AKAN MEMBUKA POPUP -->
+                        <img onclick="${actionPopup}" src="${safeImg}" loading="lazy" decoding="async" alt="Cover" class="w-full h-full object-cover rounded-lg md:rounded-xl shadow-md group-hover:scale-105 transition-transform duration-500 cursor-pointer">
+                        
                         <div class="absolute top-3 right-3 md:top-5 md:right-5 bg-black/60 px-1.5 py-0.5 md:px-2 md:py-1 rounded text-[8px] md:text-[9px] font-bold tracking-widest text-white border border-white/20 z-20">PDF</div>
                     </div>
+                    
                     <div class="p-3 md:p-4 flex flex-col flex-1">
-                        <h3 class="text-xs md:text-sm font-bold text-white line-clamp-2 leading-snug mb-1">${product.title}</h3>
+                        <!-- KLIK JUDUL AKAN MEMBUKA POPUP -->
+                        <h3 onclick="${actionPopup}" class="text-xs md:text-sm font-bold text-white line-clamp-2 leading-snug mb-1 cursor-pointer hover:text-cyan-400 transition-colors">${product.title}</h3>
+                        
                         <p class="text-[9px] md:text-[11px] text-white/50 mb-2 font-medium uppercase tracking-wider">${product.kategori}</p>
                         <div class="mt-auto mb-3"><span class="text-cyan-400 font-black text-xs md:text-sm">Rp ${priceFormatted}</span></div>
                         <div class="mt-auto" id="container-btn-${product.id}">${buttonHtml}</div>
@@ -327,7 +326,6 @@
         let searchTimeout;
         function debounceSearch(query) {
             clearTimeout(searchTimeout);
-            // Menunggu 300ms setelah user berhenti mengetik, baru jalankan pencarian (Anti Ngelag)
             searchTimeout = setTimeout(() => {
                 executeSearch(query);
             }, 300);
@@ -356,6 +354,9 @@
             }
             appState.currentPage = 1;
             renderProducts(false);
+
+            // AUTO SCROLL MULUS KE ATAS SETELAH PENCARIAN
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         // ==========================================
@@ -376,6 +377,9 @@
             
             appState.currentPage = 1;
             renderProducts(false);
+
+            // AUTO SCROLL MULUS KE ATAS SETELAH KLIK KATEGORI
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function loadMore() {
@@ -462,14 +466,13 @@
             }
         }
 
-        // Tembak inisialisasi script segera setelah DOM siap
+        // Tembak inisialisasi script segera setelah DOM siap (Dengan perbaikan untuk Brave Browser)
         document.addEventListener("DOMContentLoaded", () => {
-            // FingerprintJS CDN script dinamis untuk mencegah render-blocking
             const script = document.createElement('script');
             script.src = "https://openfpcdn.io/fingerprintjs/v4";
             script.async = true;
             script.onload = initializeApp;
-            script.onerror = initializeApp; // <--- SOLUSINYA DI SINI
+            script.onerror = initializeApp; // Solusi ampuh agar browser dengan AdBlock/Brave tetap loading
             document.head.appendChild(script);
         });
     </script>
